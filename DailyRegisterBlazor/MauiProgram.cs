@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DailyRegisterBlazor.Services;
+using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 
 namespace DailyRegisterBlazor
@@ -17,6 +18,9 @@ namespace DailyRegisterBlazor
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddMudServices();
+            builder.Services.AddSingleton<DatabaseService>();
+            builder.Services.AddLocalization();
+            builder.Services.AddSingleton<CultureService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

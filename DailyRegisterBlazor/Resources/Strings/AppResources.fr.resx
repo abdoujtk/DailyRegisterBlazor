@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<data name="AppTitle" xml:space="preserve"><value>Registre Quotidien</value></data>
+	<data name="Dashboard" xml:space="preserve"><value>Tableau de bord</value></data>
+	<data name="Register" xml:space="preserve"><value>Registre</value></data>
+	<data name="Contacts" xml:space="preserve"><value>Contacts</value></data>
+	<data name="AddEvent" xml:space="preserve"><value>Ajouter</value></data>
+	<data name="AddContact" xml:space="preserve"><value>Ajouter contact</value></data>
+	<data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+	<data name="Delete" xml:space="preserve"><value>Supprimer</value></data>
+	<data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+	<data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+	<data name="Clear" xml:space="preserve"><value>Effacer</value></data>
+	<data name="Back" xml:space="preserve"><value>Retour</value></data>
+	<data name="Search" xml:space="preserve"><value>Rechercher...</value></data>
+	<data name="Type" xml:space="preserve"><value>Type</value></data>
+	<data name="Status" xml:space="preserve"><value>Statut</value></data>
+	<data name="From" xml:space="preserve"><value>Du</value></data>
+	<data name="To" xml:space="preserve"><value>Au</value></data>
+	<data name="Amount" xml:space="preserve"><value>Montant</value></data>
+	<data name="Description" xml:space="preserve"><value>Description</value></data>
+	<data name="Date" xml:space="preserve"><value>Date</value></data>
+	<data name="Name" xml:space="preserve"><value>Nom</value></data>
+	<data name="Phone" xml:space="preserve"><value>Téléphone</value></data>
+	<data name="Notes" xml:space="preserve"><value>Notes</value></data>
+	<data name="Error" xml:space="preserve"><value>Erreur</value></data>
+	<data name="Yes" xml:space="preserve"><value>Oui</value></data>
+	<data name="No" xml:space="preserve"><value>Non</value></data>
+	<data name="Today" xml:space="preserve"><value>Aujourd'hui</value></data>
+	<data name="UnpaidDebts" xml:space="preserve"><value>Dettes impayées</value></data>
+	<data name="OverdueDebts" xml:space="preserve"><value>Dettes en retard</value></data>
+	<data name="RecentEvents" xml:space="preserve"><value>Récents</value></data>
+	<data name="NoEvents" xml:space="preserve"><value>Aucun événement.</value></data>
+	<data name="NoContacts" xml:space="preserve"><value>Aucun contact.</value></data>
+	<data name="MarkAsPaid" xml:space="preserve"><value>Marquer payé</value></data>
+	<data name="MarkAsUnpaid" xml:space="preserve"><value>Marquer impayé</value></data>
+	<data name="QuickAdd" xml:space="preserve"><value>Ajout rapide</value></data>
+	<data name="EventDetail" xml:space="preserve"><value>Détail</value></data>
+	<data name="RecordedAt" xml:space="preserve"><value>Enregistré le</value></data>
+	<data name="PaymentNote" xml:space="preserve"><value>Note de paiement</value></data>
+	<data name="TotalUnpaid" xml:space="preserve"><value>Total impayé</value></data>
+	<data name="DarkMode" xml:space="preserve"><value>Mode sombre</value></data>
+	<data name="LightMode" xml:space="preserve"><value>Mode clair</value></data>
+	<data name="Language" xml:space="preserve"><value>Langue</value></data>
+	<data name="ContactNotExist" xml:space="preserve"><value>Ce contact n'existe pas. L'ajouter?</value></data>
+	<data name="Filters" xml:space="preserve"><value>Filtres</value></data>
+	<data name="All" xml:space="preserve"><value>Tout</value></data>
+	<data name="Paid" xml:space="preserve"><value>Payé</value></data>
+	<data name="Unpaid" xml:space="preserve"><value>Impayé</value></data>
+</root>
