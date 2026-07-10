@@ -1,7 +1,17 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<App> Localizer
 
 <MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
+<MudDialogProvider />
 <MudLayout>
+    <MudAppBar Elevation="1">
+        <MudText Typo="Typo.h6" Class="ml-3">@Localizer["AppTitle"]</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Brightness6"
+                       OnClick="ToggleTheme"
+                       Title="@(_isDarkMode ? Localizer["LightMode"] : Localizer["DarkMode"])" />
+    </MudAppBar>
     <MudMainContent>
         @Body
     </MudMainContent>
@@ -10,4 +20,9 @@
 @code {
     private bool _isDarkMode;
     private readonly MudTheme _theme = new();
+
+    private void ToggleTheme()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
 }

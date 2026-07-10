@@ -1,0 +1,66 @@
+﻿@using DailyRegisterBlazor.Models
+@using DailyRegisterBlazor.Services
+@using Microsoft.Extensions.Localization
+@inject DatabaseService DatabaseService
+@inject IStringLocalizer<App> Localizer
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="_name"
+                      Label="@Localizer["Name"]"
+                      Required="true"
+                      Class="mb-3" />
+        <MudTextField @bind-Value="_phone"
+                      Label="@Localizer["Phone"]"
+                      Class="mb-3" />
+        <MudTextField @bind-Value="_notes"
+                      Label="@Localizer["Notes"]"
+                      Lines="2" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@Localizer["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Save">@Localizer["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public Contact? Contact { get; set; }
+
+    private string _name = string.Empty;
+    private string _phone = string.Empty;
+    private string _notes = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (Contact is not null)
+        {
+            _name = Contact.Name;
+            _phone = Contact.Phone ?? string.Empty;
+            _notes = Contact.Notes ?? string.Empty;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(_name)) return;
+
+        var contact = Contact ?? new Contact();
+        contact.Name = _name;
+        contact.Phone = string.IsNullOrWhiteSpace(_phone) ? null : _phone;
+        contact.Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes;
+
+        await DatabaseService.SaveContactAsync(contact);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

@@ -1,0 +1,28 @@
+﻿@using Microsoft.Extensions.Localization
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@Message</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@Localizer["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Error"
+                   OnClick="Confirm">@Localizer["Delete"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Inject]
+    private IStringLocalizer<App> Localizer { get; set; } = default!;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
+}

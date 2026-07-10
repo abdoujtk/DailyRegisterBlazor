@@ -21,6 +21,8 @@ namespace DailyRegisterBlazor
             builder.Services.AddSingleton<DatabaseService>();
             builder.Services.AddLocalization();
             builder.Services.AddSingleton<CultureService>();
+            builder.Services.AddLocalization();
+           
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

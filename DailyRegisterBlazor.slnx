@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="DailyRegisterBlazor/DailyRegisterBlazor.csproj" />
+  <Project Path="DailyRegisterBlazor/DailyRegisterBlazor.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>

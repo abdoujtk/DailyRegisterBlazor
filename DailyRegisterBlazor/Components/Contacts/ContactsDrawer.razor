@@ -1,0 +1,176 @@
+﻿@using DailyRegisterBlazor.Models
+@using DailyRegisterBlazor.Services
+@using Microsoft.Extensions.Localization
+@inject DatabaseService DatabaseService
+@inject IStringLocalizer<App> Localizer
+@inject IDialogService DialogService
+
+<MudDrawer Variant="DrawerVariant.Temporary"
+           Anchor="Anchor.End"
+           Width="350px"
+           Open="@_open"
+           OpenChanged="@OnOpenChanged">
+
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6">@Localizer["Contacts"]</MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenAddContact">
+            @Localizer["AddContact"]
+        </MudButton>
+    </MudDrawerHeader>
+
+    <MudDivider />
+
+    <div class="d-flex flex-column" style="height:100%;">
+        <div class="pa-3">
+            <MudTextField @bind-Value="_searchText"
+                          Placeholder="@Localizer["Search"]"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          OnKeyUp="ApplySearch" />
+        </div>
+
+        <div class="px-3 flex-grow-1" style="overflow-y:auto;">
+            @if (_filteredContacts.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Class="text-center mt-4">@Localizer["NoContacts"]</MudText>
+            }
+            else
+            {
+                @foreach (var contact in _filteredContacts)
+                {
+                    <MudCard Class="mb-2" Elevation="1">
+                        <MudCardContent Class="pa-2">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Inherit"
+                                           OnClick="@(() => OnContactClicked(contact))"
+                                           Class="pa-0 text-transform-none">
+                                    @contact.Name
+                                </MudButton>
+                                <div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => OpenEditContact(contact))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => DeleteContact(contact))" />
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(contact.Phone))
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @contact.Phone
+                                </MudText>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                }
+            }
+        </div>
+    </div>
+</MudDrawer>
+
+@code {
+    private bool _open;
+    private string _searchText = string.Empty;
+    private List<Contact> _allContacts = new();
+    private List<Contact> _filteredContacts = new();
+    private readonly DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    [Parameter]
+    public EventCallback<Contact> OnContactSelected { get; set; }
+
+    public async Task OpenAsync()
+    {
+        _open = true;
+        await LoadContactsAsync();
+        StateHasChanged();
+    }
+
+    private void OnOpenChanged(bool open)
+    {
+        _open = open;
+        StateHasChanged();
+    }
+
+    private async Task LoadContactsAsync()
+    {
+        _allContacts = await DatabaseService.GetContactsAsync();
+        ApplySearch();
+    }
+
+    private async void ApplySearch()
+    {
+        // Small delay to let _searchText update
+        await Task.Delay(1);
+        if (string.IsNullOrWhiteSpace(_searchText))
+            _filteredContacts = _allContacts.ToList();
+        else
+            _filteredContacts = _allContacts
+                .Where(c => c.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        StateHasChanged();
+    }
+
+    private void OnContactClicked(Contact contact)
+    {
+        _open = false;
+        OnContactSelected.InvokeAsync(contact);
+    }
+
+    private async Task OpenAddContact()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Contact", null }
+        };
+        var dialog = await DialogService.ShowAsync<ContactDialog>(
+            Localizer["AddContact"].Value,
+            parameters,
+            _dialogOptions);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+            await LoadContactsAsync();
+    }
+
+    private async Task OpenEditContact(Contact contact)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Contact", contact }
+        };
+        var dialog = await DialogService.ShowAsync<ContactDialog>(
+            Localizer["Edit"].Value,
+            parameters,
+            _dialogOptions);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+            await LoadContactsAsync();
+    }
+
+    private async Task DeleteContact(Contact contact)
+    {
+        var parameters = new DialogParameters
+    {
+        { "Message", $"Delete {contact.Name}?" }
+    };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(
+            Localizer["Delete"].Value,
+            parameters,
+            options);
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is bool confirm && confirm)
+        {
+            await DatabaseService.DeleteContactAsync(contact);
+            await LoadContactsAsync();
+        }
+    }
+}

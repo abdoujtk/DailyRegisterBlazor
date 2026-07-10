@@ -1,4 +1,28 @@
 ﻿@page "/"
+@inject IStringLocalizer<App> Localizer
 
-<MudText Typo="Typo.h3" Class="mb-4">DailyRegisterBlazor</MudText>
-<MudButton Variant="Variant.Filled" Color="Color.Primary">Click Me</MudButton>
+<ContactsDrawer @ref="_contactsDrawer"
+                OnContactSelected="OnContactSelected" />
+
+<div class="pa-4">
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.People"
+               OnClick="OpenContactsDrawer">
+        @Localizer["Contacts"]
+    </MudButton>
+</div>
+
+@code {
+    private ContactsDrawer _contactsDrawer = default!;
+
+    private void OpenContactsDrawer()
+    {
+        _contactsDrawer.OpenAsync();
+    }
+
+    private void OnContactSelected(Contact contact)
+    {
+        // Will navigate to contact detail later (Commit 7)
+    }
+}
