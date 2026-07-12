@@ -1,5 +1,5 @@
 ﻿@page "/"
-@inject IStringLocalizer<App> Localizer
+@inject TranslationService T
 
 <ContactsDrawer @ref="_contactsDrawer"
                 OnContactSelected="OnContactSelected" />
@@ -9,12 +9,17 @@
                Color="Color.Primary"
                StartIcon="@Icons.Material.Filled.People"
                OnClick="OpenContactsDrawer">
-        @Localizer["Contacts"]
+        @T.Get("Contacts")
     </MudButton>
 </div>
 
 @code {
     private ContactsDrawer _contactsDrawer = default!;
+
+    protected override void OnInitialized()
+    {
+        T.OnLanguageChanged += () => InvokeAsync(StateHasChanged);
+    }
 
     private void OpenContactsDrawer()
     {

@@ -2,7 +2,7 @@
 @using DailyRegisterBlazor.Services
 @using Microsoft.Extensions.Localization
 @inject DatabaseService DatabaseService
-@inject IStringLocalizer<App> Localizer
+@inject TranslationService T
 @inject IDialogService DialogService
 
 <MudDrawer Variant="DrawerVariant.Temporary"
@@ -12,14 +12,14 @@
            OpenChanged="@OnOpenChanged">
 
     <MudDrawerHeader>
-        <MudText Typo="Typo.h6">@Localizer["Contacts"]</MudText>
+        <MudText Typo="Typo.h6">@T.Get("Contacts")</MudText>
         <MudSpacer />
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.Add"
                    OnClick="OpenAddContact">
-            @Localizer["AddContact"]
+            @T.Get("AddContact")
         </MudButton>
     </MudDrawerHeader>
 
@@ -28,7 +28,7 @@
     <div class="d-flex flex-column" style="height:100%;">
         <div class="pa-3">
             <MudTextField @bind-Value="_searchText"
-                          Placeholder="@Localizer["Search"]"
+                          Placeholder="@T.Get("Search")"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           Immediate="true"
@@ -38,7 +38,7 @@
         <div class="px-3 flex-grow-1" style="overflow-y:auto;">
             @if (_filteredContacts.Count == 0)
             {
-                <MudText Typo="Typo.body2" Class="text-center mt-4">@Localizer["NoContacts"]</MudText>
+                <MudText Typo="Typo.body2" Class="text-center mt-4">@T.Get("NoContacts")</MudText>
             }
             else
             {
@@ -87,6 +87,11 @@
     [Parameter]
     public EventCallback<Contact> OnContactSelected { get; set; }
 
+    protected override void OnInitialized()
+    {
+        T.OnLanguageChanged += () => InvokeAsync(StateHasChanged);
+    }
+
     public async Task OpenAsync()
     {
         _open = true;
@@ -132,7 +137,7 @@
             { "Contact", null }
         };
         var dialog = await DialogService.ShowAsync<ContactDialog>(
-            Localizer["AddContact"].Value,
+            T.Get("AddContact"),
             parameters,
             _dialogOptions);
         var result = await dialog.Result;
@@ -147,7 +152,7 @@
             { "Contact", contact }
         };
         var dialog = await DialogService.ShowAsync<ContactDialog>(
-            Localizer["Edit"].Value,
+            T.Get("Edit"),
             parameters,
             _dialogOptions);
         var result = await dialog.Result;
@@ -163,7 +168,7 @@
     };
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(
-            Localizer["Delete"].Value,
+                T.Get("Delete"),
             parameters,
             options);
         var result = await dialog.Result;

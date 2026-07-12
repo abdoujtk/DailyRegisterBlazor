@@ -2,26 +2,26 @@
 @using DailyRegisterBlazor.Services
 @using Microsoft.Extensions.Localization
 @inject DatabaseService DatabaseService
-@inject IStringLocalizer<App> Localizer
+@inject TranslationService T
 
 <MudDialog>
     <DialogContent>
         <MudTextField @bind-Value="_name"
-                      Label="@Localizer["Name"]"
+                      Label="@T.Get("Name")"
                       Required="true"
                       Class="mb-3" />
         <MudTextField @bind-Value="_phone"
-                      Label="@Localizer["Phone"]"
+                      Label="@T.Get("Phone")"
                       Class="mb-3" />
         <MudTextField @bind-Value="_notes"
-                      Label="@Localizer["Notes"]"
+                      Label="@T.Get("Notes")"
                       Lines="2" />
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">@Localizer["Cancel"]</MudButton>
+        <MudButton OnClick="Cancel">@T.Get("Cancel")</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
-                   OnClick="Save">@Localizer["Save"]</MudButton>
+                   OnClick="Save">@T.Get("Save")</MudButton>
     </DialogActions>
 </MudDialog>
 

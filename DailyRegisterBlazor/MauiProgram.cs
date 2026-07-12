@@ -19,10 +19,8 @@ namespace DailyRegisterBlazor
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddMudServices();
             builder.Services.AddSingleton<DatabaseService>();
-            builder.Services.AddLocalization();
-            builder.Services.AddSingleton<CultureService>();
-            builder.Services.AddLocalization();
-           
+            builder.Services.AddSingleton<TranslationService>();
+
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

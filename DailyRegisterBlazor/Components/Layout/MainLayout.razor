@@ -1,28 +1,57 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject IStringLocalizer<App> Localizer
+@inject TranslationService T
 
+<MudPopoverProvider />
 <MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
 <MudDialogProvider />
 <MudLayout>
     <MudAppBar Elevation="1">
-        <MudText Typo="Typo.h6" Class="ml-3">@Localizer["AppTitle"]</MudText>
+        <MudText Typo="Typo.h6" Class="ml-3">@T.Get("AppTitle")</MudText>
         <MudSpacer />
+
+        <MudMenu Label="@_selectedCulture.ToUpper()"
+                 Variant="Variant.Text"
+                 Style="color:inherit;"
+                 AnchorOrigin="Origin.BottomCenter"
+                 Size="Size.Small"
+                 Class="mr-2">
+            <MudMenuItem OnClick="@(() => ChangeLanguage("en"))">EN</MudMenuItem>
+            <MudMenuItem OnClick="@(() => ChangeLanguage("fr"))">FR</MudMenuItem>
+            <MudMenuItem OnClick="@(() => ChangeLanguage("ar"))">AR</MudMenuItem>
+        </MudMenu>
+
         <MudIconButton Icon="@Icons.Material.Filled.Brightness6"
                        OnClick="ToggleTheme"
-                       Title="@(_isDarkMode ? Localizer["LightMode"] : Localizer["DarkMode"])" />
+                       Title="@(_isDarkMode ? T.Get("LightMode") : T.Get("DarkMode"))" />
     </MudAppBar>
     <MudMainContent>
         @Body
     </MudMainContent>
 </MudLayout>
-
 @code {
     private bool _isDarkMode;
     private readonly MudTheme _theme = new();
+    private string _selectedCulture = "en";
+
+    protected override void OnInitialized()
+    {
+        var saved = Microsoft.Maui.Storage.Preferences.Get("Language", "en");
+        _selectedCulture = saved;
+        T.SetLanguage(saved);
+        T.OnLanguageChanged += () => InvokeAsync(StateHasChanged);
+    }
 
     private void ToggleTheme()
     {
         _isDarkMode = !_isDarkMode;
+    }
+
+    private void ChangeLanguage(string cultureCode)
+    {
+        if (cultureCode == _selectedCulture) return;
+        _selectedCulture = cultureCode;
+        Microsoft.Maui.Storage.Preferences.Set("Language", cultureCode);
+        T.SetLanguage(cultureCode);
     }
 }
