@@ -1,0 +1,131 @@
+﻿@using DailyRegisterBlazor.Models
+@using DailyRegisterBlazor.Services
+@using MudBlazor
+@inject DatabaseService DatabaseService
+@inject TranslationService T
+
+<MudDialog>
+    <DialogContent>
+        <MudSelect T="string"
+                   Value="@_selectedType"
+                   ValueChanged="@OnTypeChanged"
+                   Label="@T.Get("Type")"
+                   Class="mb-3">
+            <MudSelectItem Value="@("debt")">@T.Get("debt")</MudSelectItem>
+            <MudSelectItem Value="@("deposit")">@T.Get("deposit")</MudSelectItem>
+            <MudSelectItem Value="@("expense")">@T.Get("expense")</MudSelectItem>
+            <MudSelectItem Value="@("product_entry")">@T.Get("product_entry")</MudSelectItem>
+            <MudSelectItem Value="@("general_note")">@T.Get("general_note")</MudSelectItem>
+        </MudSelect>
+
+        @if (_showContact)
+        {
+            <MudSelect T="Contact"
+                       @bind-Value="_selectedContact"
+                       Label="@T.Get("SelectContact")"
+                       Class="mb-3"
+                       ToStringFunc="@(c => c?.Name ?? string.Empty)"
+                       HelperText="@(_contactNotFound ? T.Get("ContactNotExist") : null)">
+                @foreach (var contact in _contacts)
+                {
+                    <MudSelectItem Value="contact">@contact.Name</MudSelectItem>
+                }
+            </MudSelect>
+        }
+
+        @if (_showAmount)
+        {
+            <MudTextField @bind-Value="_amount"
+                          Label="@T.Get("Amount")"
+                          Class="mb-3"
+                          InputType="InputType.Number" />
+        }
+
+        <MudTextField @bind-Value="_description"
+                      Label="@T.Get("Description")"
+                      Class="mb-3"
+                      Lines="2"
+                      Required="@(_selectedType == "expense")" />
+
+        <MudDatePicker Date="@_eventDate"
+                       DateChanged="@(v => _eventDate = v ?? DateTime.Today)"
+                       Label="@T.Get("Date")"
+                       Editable ="true"
+                       Class="mb-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@T.Get("Cancel")</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Save">@T.Get("Save")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    
+    
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public AppEvent? Event { get; set; }
+
+    private List<Contact> _contacts = new();
+    private string _selectedType = "debt";
+    private Contact? _selectedContact;
+    private string _amount = string.Empty;
+    private string _description = string.Empty;
+    private DateTime _eventDate = DateTime.Today;
+    private bool _showContact = true;
+    private bool _showAmount = true;
+    private bool _contactNotFound;
+
+    protected override async void OnInitialized()
+    {
+        _contacts = await DatabaseService.GetContactsAsync();
+
+        if (Event is not null)
+        {
+            _selectedType = Event.Type;
+            _selectedContact = _contacts.FirstOrDefault(c => c.Id == Event.ContactId);
+            _amount = Event.Amount?.ToString() ?? string.Empty;
+            _description = Event.Description;
+            _eventDate = Event.EventDate;
+            UpdateVisibility();
+        }
+    }
+
+    private void UpdateVisibility()
+    {
+        _showContact = _selectedType != "general_note";
+        _showAmount = _selectedType is "debt" or "deposit" or "expense";
+        StateHasChanged();
+    }
+
+    private async Task OnTypeChanged(string type)
+    {
+        _selectedType = type;
+        UpdateVisibility();
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(_description) && _selectedType == "expense")
+            return;
+
+        var appEvent = Event ?? new AppEvent();
+        appEvent.Type = _selectedType;
+        appEvent.ContactId = _selectedContact?.Id;
+        appEvent.Amount = _showAmount && decimal.TryParse(_amount, out var parsed) ? parsed : null;
+        appEvent.Description = _description;
+        appEvent.EventDate = _eventDate;
+
+        if (appEvent.Type == "debt" && appEvent.Status is null)
+            appEvent.Status = "unpaid";
+
+        await DatabaseService.SaveEventAsync(appEvent);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

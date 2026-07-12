@@ -29,6 +29,7 @@
         @Body
     </MudMainContent>
 </MudLayout>
+
 @code {
     private bool _isDarkMode;
     private readonly MudTheme _theme = new();
@@ -36,9 +37,7 @@
 
     protected override void OnInitialized()
     {
-        var saved = Microsoft.Maui.Storage.Preferences.Get("Language", "en");
-        _selectedCulture = saved;
-        T.SetLanguage(saved);
+        _selectedCulture = T.CurrentCulture;
         T.OnLanguageChanged += () => InvokeAsync(StateHasChanged);
     }
 
@@ -51,7 +50,6 @@
     {
         if (cultureCode == _selectedCulture) return;
         _selectedCulture = cultureCode;
-        Microsoft.Maui.Storage.Preferences.Set("Language", cultureCode);
         T.SetLanguage(cultureCode);
     }
 }
