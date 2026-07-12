@@ -7,17 +7,70 @@
                 OnContactSelected="OnContactSelected" />
 
 <div class="pa-4 d-flex flex-column" style="height:100%;">
-    <div class="d-flex justify-space-between align-center mb-3">
-        <MudText Typo="Typo.h5">@T.Get("AppTitle")</MudText>
+
+    <!-- Stats Bar -->
+    <div class="d-flex mb-3" style="gap:8px;">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Tertiary"
+                   Class="flex-grow-1"
+                   Style="height:70px; text-transform:none;"
+                   OnClick="@(() => FilterByStat("all"))">
+            <div class="text-center">
+                <div style="font-size:22px; font-weight:bold;">@_allEvents.Count</div>
+                <div style="font-size:11px;">@T.Get("All")</div>
+            </div>
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="flex-grow-1"
+                   Style="height:70px; text-transform:none;"
+                   OnClick="@(() => FilterByStat("today"))">
+            <div class="text-center">
+                <div style="font-size:22px; font-weight:bold;">@_todayCount</div>
+                <div style="font-size:11px;">@T.Get("Today")</div>
+            </div>
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Error"
+                   Class="flex-grow-1"
+                   Style="height:70px; text-transform:none;"
+                   OnClick="@(() => FilterByStat("unpaid"))">
+            <div class="text-center">
+                <div style="font-size:22px; font-weight:bold;">@_unpaidCount</div>
+                <div style="font-size:11px;">@T.Get("UnpaidDebts")</div>
+            </div>
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Warning"
+                   Class="flex-grow-1"
+                   Style="height:70px; text-transform:none;"
+                   OnClick="@(() => FilterByStat("overdue"))">
+            <div class="text-center">
+                <div style="font-size:22px; font-weight:bold;">@_overdueCount</div>
+                <div style="font-size:11px;">@T.Get("OverdueDebts")</div>
+            </div>
+        </MudButton>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-space-between mb-2">
+        <MudButton Variant="Variant.Outlined"
+                   Size="Size.Small"
+                   OnClick="ToggleFilters"
+                   StartIcon="@Icons.Material.Filled.FilterList">
+            @T.Get("Filters") @(_showFilters ? "▲" : "▼")
+        </MudButton>
         <div>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
+                       Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Add"
                        OnClick="OpenAddEvent"
                        Class="mr-2">
                 @T.Get("AddEvent")
             </MudButton>
             <MudButton Variant="Variant.Filled"
+                       Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.People"
                        OnClick="OpenContactsDrawer">
                 @T.Get("Contacts")
@@ -25,20 +78,82 @@
         </div>
     </div>
 
+    <!-- Collapsible Filters -->
+    @if (_showFilters)
+    {
+        <MudPaper Class="mb-3 pa-2" Elevation="1" Style="overflow:visible;">
+        <div class="d-flex flex-wrap" style="gap:8px; align-items:center;">
+                <MudTextField @bind-Value="_searchText"
+                              Placeholder="@T.Get("Search")"
+                              Style="width:200px;"
+                              Immediate="true"
+                              OnKeyUp="ApplyFilters" />
+
+                <MudSelect T="string"
+                           Value="@_filterType"
+                           ValueChanged="@(v => { _filterType = v; ApplyFilters(); })"
+                           Label="@T.Get("Type")"
+                           Style="width:130px;">
+                    <MudSelectItem Value="@("all")">@T.Get("All")</MudSelectItem>
+                    <MudSelectItem Value="@("debt")">@T.Get("debt")</MudSelectItem>
+                    <MudSelectItem Value="@("deposit")">@T.Get("deposit")</MudSelectItem>
+                    <MudSelectItem Value="@("expense")">@T.Get("expense")</MudSelectItem>
+                    <MudSelectItem Value="@("product_entry")">@T.Get("product_entry")</MudSelectItem>
+                    <MudSelectItem Value="@("general_note")">@T.Get("general_note")</MudSelectItem>
+                </MudSelect>
+
+                <MudSelect T="string"
+                           Value="@_filterStatus"
+                           ValueChanged="@(v => { _filterStatus = v ?? "all"; ApplyFilters(); })"
+                           Label="@T.Get("Status")"
+                           Style="width:130px;">
+                    <MudSelectItem Value="@("all")">@T.Get("All")</MudSelectItem>
+                    <MudSelectItem Value="@("unpaid")">@T.Get("Unpaid")</MudSelectItem>
+                    <MudSelectItem Value="@("paid")">@T.Get("Paid")</MudSelectItem>
+                </MudSelect>
+
+                <MudDatePicker Date="@_filterDateFrom"
+                               DateChanged="@(v => { _filterDateFrom = v ?? DateTime.Today.AddMonths(-1); ApplyFilters(); })"
+                               Label="@T.Get("From")"
+                               Editable="true"
+                               PickerVariant="PickerVariant.Inline"
+                               ShowToolbar="false"
+                               
+                               />
+
+                <MudDatePicker Date="@_filterDateTo"
+                               DateChanged="@(v => { _filterDateTo = v ?? DateTime.Today; ApplyFilters(); })"
+                               Label="@T.Get("To")"
+                               Editable="true"
+                               PickerVariant="PickerVariant.Inline"
+                               ShowToolbar="false"
+                                />
+
+                <MudButton Variant="Variant.Text"
+                           Size="Size.Small"
+                           OnClick="ClearFilters">
+                    @T.Get("Clear")
+                </MudButton>
+            </div>
+        </MudPaper>
+    }
+
+    <!-- Events List -->
     <div class="flex-grow-1" style="overflow-y:auto;">
-        @if (_events.Count == 0)
+        @if (_filteredEvents.Count == 0)
         {
             <MudText Typo="Typo.body2" Class="text-center mt-4">@T.Get("NoEvents")</MudText>
         }
         else
         {
-            @foreach (var evt in _events)
+            @foreach (var evt in _filteredEvents)
             {
                 <MudCard Class="mb-2" Elevation="1">
                     <MudCardContent Class="pa-3">
                         <div class="d-flex justify-space-between align-center">
                             <div class="d-flex align-center" style="gap:8px;">
-                                <MudChip T="string" Size="Size.Small" Color="@GetTypeColor(evt.Type)">
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@GetTypeColor(evt.Type)">
                                     @T.Get(evt.Type)
                                 </MudChip>
                                 @if (evt.Type == "debt" && !string.IsNullOrEmpty(evt.Status))
@@ -46,13 +161,13 @@
                                     <MudChip T="string" Size="Size.Small"
                                              Color="@(evt.Status == "paid" ? Color.Success : Color.Error)">
                                         @T.Get(evt.Status == "paid" ? "Paid" : "Unpaid")
-                                    </MudChip>  
+                                    </MudChip>
                                 }
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">
                                     @evt.EventDate.ToString("dd/MM/yyyy")
                                 </MudText>
                             </div>
-                            <div class="d-flex">
+                            <div class="d-flex align-center">
                                 @if (evt.Amount.HasValue)
                                 {
                                     <MudText Typo="Typo.body1" Class="mr-2 font-weight-bold">
@@ -84,8 +199,22 @@
 
 @code {
     private ContactsDrawer _contactsDrawer = default!;
-    private List<AppEvent> _events = new();
+    private List<AppEvent> _allEvents = new();
+    private List<AppEvent> _filteredEvents = new();
     private List<Contact> _contacts = new();
+    private bool _showFilters;
+
+    // Stats
+    private int _todayCount;
+    private int _unpaidCount;
+    private int _overdueCount;
+
+    // Filters
+    private string _searchText = string.Empty;
+    private string _filterType = "all";
+    private string _filterStatus = "all";
+    private DateTime _filterDateFrom = DateTime.Today.AddMonths(-1);
+    private DateTime _filterDateTo = DateTime.Today;
 
     protected override async void OnInitialized()
     {
@@ -95,19 +224,99 @@
 
     private async Task LoadData()
     {
-        _events = await DatabaseService.GetEventsAsync();
+        _allEvents = await DatabaseService.GetEventsAsync();
         _contacts = await DatabaseService.GetContactsAsync();
 
-        foreach (var evt in _events)
+        foreach (var evt in _allEvents)
         {
             if (evt.ContactId.HasValue)
                 evt.ContactName = _contacts.FirstOrDefault(c => c.Id == evt.ContactId.Value)?.Name;
         }
+
+        UpdateStats();
+        ApplyFilters();
+    }
+
+    private void UpdateStats()
+    {
+        var today = DateTime.Today;
+        _todayCount = _allEvents.Count(e => e.EventDate.Date == today);
+        _unpaidCount = _allEvents.Count(e => e.Type == "debt" && e.Status == "unpaid");
+        _overdueCount = _allEvents.Count(e => e.Type == "debt" && e.Status == "unpaid"
+            && e.EventDate.Date <= today.AddDays(-7));
+    }
+
+    private void ApplyFilters()
+    {
+        var filtered = _allEvents.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(_searchText))
+        {
+            var search = _searchText.ToLower();
+            filtered = filtered.Where(e =>
+                e.Description.ToLower().Contains(search) ||
+                (e.ContactName != null && e.ContactName.ToLower().Contains(search)));
+        }
+
+        if (_filterType != "all")
+            filtered = filtered.Where(e => e.Type == _filterType);
+
+        if (_filterStatus != "all")
+            filtered = filtered.Where(e => e.Status == _filterStatus);
+
+        filtered = filtered.Where(e =>
+            e.EventDate.Date >= _filterDateFrom.Date &&
+            e.EventDate.Date <= _filterDateTo.Date);
+
+        _filteredEvents = filtered.OrderByDescending(e => e.EventDate).ToList();
+        StateHasChanged();
+    }
+
+    private void ToggleFilters() => _showFilters = !_showFilters;
+
+    private void ClearFilters()
+    {
+        _searchText = string.Empty;
+        _filterType = "all";
+        _filterStatus = "all";
+        _filterDateFrom = DateTime.Today.AddMonths(-1);
+        _filterDateTo = DateTime.Today;
+        ApplyFilters();
+    }
+
+    private void FilterByStat(string stat)
+    {
+        // Reset filters first
+        _searchText = string.Empty;
+        _filterType = "all";
+        _filterStatus = "all";
+        _filterDateFrom = DateTime.Today.AddMonths(-1);
+        _filterDateTo = DateTime.Today;
+
+        var today = DateTime.Today;
+
+        switch (stat)
+        {
+            case "today":
+                _filterDateFrom = today;
+                _filterDateTo = today;
+                break;
+            case "unpaid":
+                _filterType = "debt";
+                _filterStatus = "unpaid";
+                break;
+            case "overdue":
+                _filterType = "debt";
+                _filterStatus = "unpaid";
+                _filterDateTo = today.AddDays(-7);
+                break;
+        }
+        _showFilters = true;
+        ApplyFilters();
         StateHasChanged();
     }
 
     private void OpenContactsDrawer() => _contactsDrawer.OpenAsync();
-
     private void OnContactSelected(Contact contact) { /* Later */ }
 
     private Color GetTypeColor(string type) => type switch
@@ -139,9 +348,10 @@
 
     private async Task DeleteEvent(AppEvent evt)
     {
-        var parameters = new DialogParameters { { "Message", $"Delete this {evt.Type}?" } };
+        var parameters = new DialogParameters { { "Message", $"Delete this event?" } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(
-            T.Get("Delete"), parameters, new DialogOptions { MaxWidth = MaxWidth.ExtraSmall });
+            T.Get("Delete"), parameters, options);
         var result = await dialog.Result;
         if (!result.Canceled && result.Data is bool confirm && confirm)
         {

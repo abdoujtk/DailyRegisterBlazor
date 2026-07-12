@@ -40,6 +40,13 @@ public class TranslationService
             ["Unpaid"] = "Unpaid",
             ["Paid"] = "Paid",
             ["Currency"] = "DZD",
+            ["Today"] = "Today",
+            ["UnpaidDebts"] = "Unpaid",
+            ["OverdueDebts"] = "Overdue",
+            ["Filters"] = "Filters",
+            ["From"] = "From",
+            ["To"] = "To",
+            ["Clear"] = "Clear",
         },
         ["fr"] = new()
         {
@@ -75,6 +82,13 @@ public class TranslationService
             ["Unpaid"] = "Impayé",
             ["Paid"] = "Payé",
             ["Currency"] = "DZD",
+            ["Today"] = "Aujourd'hui",
+            ["UnpaidDebts"] = "Impayés",
+            ["OverdueDebts"] = "En retard",
+            ["Filters"] = "Filtres",
+            ["From"] = "Du",
+            ["To"] = "Au",
+            ["Clear"] = "Effacer",
         },
         ["ar"] = new()
         {
@@ -110,6 +124,13 @@ public class TranslationService
             ["Unpaid"] = "غير مدفوع",
             ["Paid"] = "مدفوع",
             ["Currency"] = "دج",
+            ["Today"] = "اليوم",
+            ["UnpaidDebts"] = "غير مدفوعة",
+            ["OverdueDebts"] = "متأخرة",
+            ["Filters"] = "تصفية",
+            ["From"] = "من",
+            ["To"] = "إلى",
+            ["Clear"] = "مسح",
         },
     };
 
