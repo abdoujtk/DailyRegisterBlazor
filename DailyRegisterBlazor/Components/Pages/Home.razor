@@ -82,7 +82,7 @@
     @if (_showFilters)
     {
         <MudPaper Class="mb-3 pa-2" Elevation="1" Style="overflow:visible;">
-        <div class="d-flex flex-wrap" style="gap:8px; align-items:center;">
+            <div class="d-flex flex-wrap" style="gap:8px; align-items:center;">
                 <MudTextField @bind-Value="_searchText"
                               Placeholder="@T.Get("Search")"
                               Style="width:200px;"
@@ -109,6 +109,7 @@
                            Style="width:130px;">
                     <MudSelectItem Value="@("all")">@T.Get("All")</MudSelectItem>
                     <MudSelectItem Value="@("unpaid")">@T.Get("Unpaid")</MudSelectItem>
+                    <MudSelectItem Value="@("partial")">@T.Get("Partial")</MudSelectItem>
                     <MudSelectItem Value="@("paid")">@T.Get("Paid")</MudSelectItem>
                 </MudSelect>
 
@@ -117,17 +118,14 @@
                                Label="@T.Get("From")"
                                Editable="true"
                                PickerVariant="PickerVariant.Inline"
-                               ShowToolbar="false"
-                               
-                               />
+                               ShowToolbar="false" />
 
                 <MudDatePicker Date="@_filterDateTo"
                                DateChanged="@(v => { _filterDateTo = v ?? DateTime.Today; ApplyFilters(); })"
                                Label="@T.Get("To")"
                                Editable="true"
                                PickerVariant="PickerVariant.Inline"
-                               ShowToolbar="false"
-                                />
+                               ShowToolbar="false" />
 
                 <MudButton Variant="Variant.Text"
                            Size="Size.Small"
@@ -159,10 +157,23 @@
                                 @if (evt.Type == "debt" && !string.IsNullOrEmpty(evt.Status))
                                 {
                                     <MudChip T="string" Size="Size.Small"
-                                             Color="@(evt.Status == "paid" ? Color.Success : Color.Error)">
-                                        @T.Get(evt.Status == "paid" ? "Paid" : "Unpaid")
+                                             Color="@(evt.Status == "paid" ? Color.Success :
+                                                                                                   evt.Status == "partial" ? Color.Warning : Color.Error)">
+                                        @T.Get(evt.Status == "paid" ? "Paid" :
+                                                evt.Status == "partial" ? "Partial" : "Unpaid")
                                     </MudChip>
+
+                                    @if (evt.Status != "paid")
+                                    {
+                                        <MudChip T="string" Size="Size.Small"
+                                                 Color="Color.Primary"
+                                                 Style="cursor:pointer;"
+                                                 OnClick="@(() => OpenPayment(evt))">
+                                            @T.Get("AddPayment")
+                                        </MudChip>
+                                    }
                                 }
+
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">
                                     @evt.EventDate.ToString("dd/MM/yyyy")
                                 </MudText>
@@ -171,7 +182,16 @@
                                 @if (evt.Amount.HasValue)
                                 {
                                     <MudText Typo="Typo.body1" Class="mr-2 font-weight-bold">
-                                        @evt.Amount.Value.ToString("N2") @T.Get("Currency")
+                                        @if (evt.Type == "debt" && evt.Status == "partial")
+                                        {
+                                            <span style="text-decoration:line-through; font-size:12px; color:gray;">@evt.Amount.Value.ToString("N2")</span>
+                                            <span> @evt.RemainingAmount?.ToString("N2")</span>
+                                        }
+                                        else
+                                        {
+                                            @evt.Amount.Value.ToString("N2")
+                                        }
+                                        @T.Get("Currency")
                                     </MudText>
                                 }
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -241,8 +261,8 @@
     {
         var today = DateTime.Today;
         _todayCount = _allEvents.Count(e => e.EventDate.Date == today);
-        _unpaidCount = _allEvents.Count(e => e.Type == "debt" && e.Status == "unpaid");
-        _overdueCount = _allEvents.Count(e => e.Type == "debt" && e.Status == "unpaid"
+        _unpaidCount = _allEvents.Count(e => e.Type == "debt" && (e.Status == "unpaid" || e.Status == "partial"));
+        _overdueCount = _allEvents.Count(e => e.Type == "debt" && (e.Status == "unpaid" || e.Status == "partial")
             && e.EventDate.Date <= today.AddDays(-7));
     }
 
@@ -286,7 +306,6 @@
 
     private void FilterByStat(string stat)
     {
-        // Reset filters first
         _searchText = string.Empty;
         _filterType = "all";
         _filterStatus = "all";
@@ -330,11 +349,28 @@
 
     private async Task OpenAddEvent()
     {
-        var parameters = new DialogParameters { { "Event", null } };
-        var dialog = await DialogService.ShowAsync<EventDialog>(
-            T.Get("AddEvent"), parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
-        var result = await dialog.Result;
-        if (!result.Canceled) await LoadData();
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("=== OpenAddEvent START ===");
+            System.Diagnostics.Debug.WriteLine($"DialogService: {DialogService != null}");
+
+            var parameters = new DialogParameters { { "Event", null } };
+            System.Diagnostics.Debug.WriteLine("=== Showing dialog... ===");
+
+            var dialog = await DialogService.ShowAsync<EventDialog>(
+                        "TEST", parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+            System.Diagnostics.Debug.WriteLine("=== Dialog shown ===");
+            var result = await dialog.Result;
+            System.Diagnostics.Debug.WriteLine($"=== Dialog result: Canceled={result.Canceled} ===");
+
+            if (!result.Canceled) await LoadData();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"=== ERROR: {ex.Message} ===");
+            System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+        }
     }
 
     private async Task OpenEditEvent(AppEvent evt)
@@ -348,7 +384,12 @@
 
     private async Task DeleteEvent(AppEvent evt)
     {
-        var parameters = new DialogParameters { { "Message", $"Delete this event?" } };
+        var parameters = new DialogParameters
+    {
+        { "Message", $"Delete this event?" },
+        { "ConfirmText", T.Get("Delete") },
+        { "ButtonColor", Color.Error }
+    };
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(
             T.Get("Delete"), parameters, options);
@@ -356,6 +397,19 @@
         if (!result.Canceled && result.Data is bool confirm && confirm)
         {
             await DatabaseService.DeleteEventAsync(evt);
+            await LoadData();
+        }
+    }
+
+    private async Task OpenPayment(AppEvent evt)
+    {
+        var parameters = new DialogParameters { { "Event", evt } };
+        var dialog = await DialogService.ShowAsync<PaymentDialog>(
+            T.Get("AddPayment"), parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await DatabaseService.SaveEventAsync(evt);
             await LoadData();
         }
     }

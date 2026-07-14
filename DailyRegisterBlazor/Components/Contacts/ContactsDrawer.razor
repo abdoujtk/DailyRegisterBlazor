@@ -133,9 +133,9 @@
     private async Task OpenAddContact()
     {
         var parameters = new DialogParameters
-        {
-            { "Contact", null }
-        };
+    {
+        { "Contact", null }
+    };
         var dialog = await DialogService.ShowAsync<ContactDialog>(
             T.Get("AddContact"),
             parameters,
@@ -164,11 +164,13 @@
     {
         var parameters = new DialogParameters
     {
-        { "Message", $"Delete {contact.Name}?" }
+        { "Message", $"Delete {contact.Name}?" },
+        { "ConfirmText", T.Get("Delete") },
+        { "ButtonColor", Color.Error }
     };
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(
-                T.Get("Delete"),
+            T.Get("Delete"),
             parameters,
             options);
         var result = await dialog.Result;

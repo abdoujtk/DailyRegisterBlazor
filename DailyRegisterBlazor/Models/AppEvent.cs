@@ -19,8 +19,15 @@ public class AppEvent
 
     [MaxLength(20)]
     public string? Status { get; set; }
+    // "unpaid", "partial", "paid"
 
     public string? StatusNote { get; set; }
+
+    public decimal? RemainingAmount { get; set; }
+    // How much is still owed (null for non-debts)
+
+    public decimal? PaidAmount { get; set; }
+    // How much has been paid so far
 
     public DateTime EventDate { get; set; } = DateTime.Now;
 
@@ -28,7 +35,6 @@ public class AppEvent
 
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
-    // Runtime only — not stored in database
     [Ignore]
     public string? ContactName { get; set; }
 }

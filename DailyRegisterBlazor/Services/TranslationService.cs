@@ -47,6 +47,15 @@ public class TranslationService
             ["From"] = "From",
             ["To"] = "To",
             ["Clear"] = "Clear",
+            ["Paid"] = "Paid",
+            ["Unpaid"] = "Unpaid",
+            ["Partial"] = "Partial",
+            ["Remaining"] = "Remaining",
+            ["PaidAmount"] = "Paid",
+            ["AddPayment"] = "Add Payment",
+            ["PaymentAmount"] = "Payment Amount",
+            ["MarkPaid"] = "Mark Fully Paid",
+            ["AddPayment"] = "Add Payment",     // EN
         },
         ["fr"] = new()
         {
@@ -89,6 +98,15 @@ public class TranslationService
             ["From"] = "Du",
             ["To"] = "Au",
             ["Clear"] = "Effacer",
+            ["Paid"] = "Payé",
+            ["Unpaid"] = "Impayé",
+            ["Partial"] = "Partiel",
+            ["Remaining"] = "Restant",
+            ["PaidAmount"] = "Payé",
+            ["AddPayment"] = "Ajouter paiement",
+            ["PaymentAmount"] = "Montant du paiement",
+            ["MarkPaid"] = "Marquer tout payé",
+            ["AddPayment"] = "Ajouter paiement", // FR
         },
         ["ar"] = new()
         {
@@ -131,6 +149,15 @@ public class TranslationService
             ["From"] = "من",
             ["To"] = "إلى",
             ["Clear"] = "مسح",
+            ["Paid"] = "مدفوع",
+            ["Unpaid"] = "غير مدفوع",
+            ["Partial"] = "جزئي",
+            ["Remaining"] = "المتبقي",
+            ["PaidAmount"] = "المدفوع",
+            ["AddPayment"] = "إضافة دفعة",
+            ["PaymentAmount"] = "مبلغ الدفعة",
+            ["MarkPaid"] = "تعليم كمدفوع بالكامل",
+            ["AddPayment"] = "إضافة دفعة",       // AR
         },
     };
 

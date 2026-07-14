@@ -1,0 +1,119 @@
+﻿@using DailyRegisterBlazor.Models
+@using DailyRegisterBlazor.Services
+@using DailyRegisterBlazor.Components.Contacts
+@inject TranslationService T
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Class="mb-2">
+            @T.Get("Remaining"): <strong>@Event.RemainingAmount?.ToString("N2") @T.Get("Currency")</strong>
+        </MudText>
+
+        <MudText Typo="Typo.caption" Class="mb-3">
+            @T.Get("PaidAmount"): @Event.PaidAmount?.ToString("N2") @T.Get("Currency")
+        </MudText>
+
+        <MudTextField @bind-Value="_paymentText"
+                      Label="@T.Get("PaymentAmount")"
+                      InputType="InputType.Number"
+                      Class="mb-3" />
+
+        <MudTextField @bind-Value="_note"
+                      Label="@T.Get("Notes")"
+                      Lines="2"
+                      Placeholder="Payment note..." />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@T.Get("Cancel")</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   OnClick="ConfirmFullPaid">@T.Get("MarkPaid")</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="ConfirmAddPayment">@T.Get("AddPayment")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public AppEvent Event { get; set; } = default!;
+
+    private string _paymentText = string.Empty;
+    private string _note = string.Empty;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task ConfirmAddPayment()
+    {
+        if (!decimal.TryParse(_paymentText, out var amount) || amount <= 0)
+            return;
+
+        var remaining = Event.RemainingAmount ?? 0;
+        if (amount > remaining)
+            amount = remaining;
+
+        var parameters = new DialogParameters
+        {
+            { "Message", $"Add payment of {amount:N2} {T.Get("Currency")}?\nRemaining after: {(remaining - amount):N2} {T.Get("Currency")}" },
+            { "ConfirmText", T.Get("AddPayment") }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(
+            T.Get("AddPayment"), parameters, options);
+        var result = await dialog.Result;
+
+        if (result.Canceled || result.Data is not true)
+            return;
+
+        Event.PaidAmount = (Event.PaidAmount ?? 0) + amount;
+        Event.RemainingAmount = (Event.Amount ?? 0) - Event.PaidAmount;
+
+        if (Event.RemainingAmount <= 0)
+        {
+            Event.Status = "paid";
+            Event.RemainingAmount = 0;
+        }
+        else
+        {
+            Event.Status = "partial";
+        }
+
+        var existingNote = string.IsNullOrEmpty(Event.StatusNote) ? "" : Event.StatusNote + " | ";
+        Event.StatusNote = existingNote + $"{DateTime.Today:dd/MM/yyyy}: +{amount:N2}";
+        if (!string.IsNullOrEmpty(_note))
+            Event.StatusNote += $" ({_note})";
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private async Task ConfirmFullPaid()
+    {
+        var remaining = Event.RemainingAmount ?? 0;
+
+        var parameters = new DialogParameters
+        {
+            { "Message", $"Mark as fully paid?\nRemaining: {remaining:N2} {T.Get("Currency")} will be cleared." },
+            { "ConfirmText", T.Get("MarkPaid") }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(
+            T.Get("MarkPaid"), parameters, options);
+        var result = await dialog.Result;
+
+        if (result.Canceled || result.Data is not true)
+            return;
+
+        Event.PaidAmount = Event.Amount;
+        Event.RemainingAmount = 0;
+        Event.Status = "paid";
+
+        var existingNote = string.IsNullOrEmpty(Event.StatusNote) ? "" : Event.StatusNote + " | ";
+        Event.StatusNote = existingNote + $"{DateTime.Today:dd/MM/yyyy}: Full payment";
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

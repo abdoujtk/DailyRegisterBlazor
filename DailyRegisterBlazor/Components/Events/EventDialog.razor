@@ -28,7 +28,7 @@
                        HelperText="@(_contactNotFound ? T.Get("ContactNotExist") : null)">
                 @foreach (var contact in _contacts)
                 {
-                    <MudSelectItem Value="contact">@contact.Name</MudSelectItem>
+                    <MudSelectItem Value="@contact">@contact.Name</MudSelectItem>
                 }
             </MudSelect>
         }
@@ -122,8 +122,19 @@
         appEvent.Description = _description;
         appEvent.EventDate = _eventDate;
 
-        if (appEvent.Type == "debt" && appEvent.Status is null)
-            appEvent.Status = "unpaid";
+        // Set initial debt values
+        if (appEvent.Type == "debt")
+        {
+            appEvent.Status ??= "unpaid";
+            appEvent.RemainingAmount ??= appEvent.Amount;
+            appEvent.PaidAmount ??= 0;
+        }
+        else
+        {
+            appEvent.Status = null;
+            appEvent.RemainingAmount = null;
+            appEvent.PaidAmount = null;
+        }
 
         await DatabaseService.SaveEventAsync(appEvent);
         MudDialog.Close(DialogResult.Ok(true));

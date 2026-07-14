@@ -8,8 +8,8 @@
     <DialogActions>
         <MudButton OnClick="Cancel">@T.Get("Cancel")</MudButton>
         <MudButton Variant="Variant.Filled"
-                   Color="Color.Error"
-                   OnClick="Confirm">@T.Get("Delete")</MudButton>
+                   Color="@ButtonColor"
+                   OnClick="Confirm">@ConfirmText</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -19,6 +19,12 @@
 
     [Parameter]
     public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ConfirmText { get; set; } = "OK";
+
+    [Parameter]
+    public Color ButtonColor { get; set; } = Color.Primary;
 
     private void Cancel() => MudDialog.Cancel();
 
